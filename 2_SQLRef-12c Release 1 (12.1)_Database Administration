@@ -50,3 +50,34 @@ to which the hint applies. This syntax lets you specify in the outer query a hin
 applies to an inline view.
 The syntax of the query block argument is of the form @queryblock, where queryblock
 is an identifier that specifies a query block in the query.
+
+
+
+
+For example, the optimizer uses the query optimization approach to optimize the
+following statement for best response time:
+SELECT /*+ FIRST_ROWS(10) */ employee_id, last_name, salary, job_id
+FROM employees
+WHERE department_id = 20;
+
+The FULL hint instructs the optimizer to perform a full table scan for the specified table.
+For example:
+SELECT /*+ FULL(e) */ employee_id, last_name
+FROM hr.employees e
+WHERE last_name LIKE :b1;
+
+
+
+The GATHER_OPTIMIZER_STATISTICS hint instructs the optimizer to enable statistics
+gathering during the following types of bulk loads:
+■ CREATE TABLE ... AS SELECT
+■ INSERT INTO ... SELECT into an empty table using a direct-path insert
+
+The INDEX hint instructs the optimizer to use an index scan for the specified table. You
+can use the INDEX hint for function-based, domain, B-tree, bitmap, and bitmap join
+indexes.
+
+The REWRITE hint instructs the optimizer to rewrite a query in terms of materialized
+views, when possible, without cost consideration. Use the REWRITE hint with or
+without a view list. If you use REWRITE with a view list and the list contains an eligible
+materialized view, then Oracle uses that view regardless of its cost
