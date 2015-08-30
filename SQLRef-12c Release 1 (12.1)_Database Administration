@@ -14,4 +14,323 @@ Float(p) - subtype of number, internally represented as NUMBER
 LONG - provided for backward compatibility 2gb char variable length
 DATE - 4712 jan 1 BC to dev 31 9999AD
    NLS_DATE_FORMAT determines the default format. Size is fixed 7 bytes.
-   
+BINARY_FLOAT - 32 bit fp number, 4 bytes
+BINARY_DOUBLE - 64 bit fp, 8 bytes
+TIMESTAMP Y,M,DATE,H,M,S. FRACTIONAL SECONDS IS 6
+TIMESTAMP WITH TIME ZONE
+TIMESTAMP WITH LOCALTIME ZONE
+INTERVAL YEAR TO MONTH - STORES PERIOD OF TIME IN YEARS AND MONTHS
+INTERVAL DAY TO SECOND - STORES PERIOD OF TIME IN DAYS,HOURS, MIN AND SEC
+
+ROWI (BASE 64 REP OF ADDRESS OF ROW IN ITS TABLE)
+UROWID - LOGICAL ADDRESS OF ROW OF AN IOT
+CHAR , NCHAR , CLOB , NCLOB, BLOB,BFILE
+--------------------------------------------------------
+PG-53
+NUMBER DATA TYPE
+It is good practice to specify the scale and precision of a fixed-point number column
+for extra integrity checking on input. Specifying scale and precision does not force all
+values to a fixed length. If a value exceeds the precision, then Oracle returns an error. If
+a value exceeds the scale, then Oracle rounds it.
+Specify a floating-point number using the following form:
+NUMBER
+NUMBER(p) / NUMBER(p,0) REPRESENTS FIXED POINT NUMBER
+
+NUMBER(TOTAL DIGITS,DIGITS AFTER DECIMAL POINT)
+NUMBER(5,2) - 123.89 STORED AS CORRECT, NUMBER(4,2) OR NUMBER(3,2) GIVES ERROR
+123.89 NUMBER(6,1) 123.9
+123.89 NUMBER(6,-2) 100
+NOTE - p is the precision, or the maximum number of significant decimal digits, where the
+most significant digit is the left-most nonzero digit, and the least significant digit is
+the right-most known digit. 
+HENCE .01234 NUMBER(4,5) .01234  STORES CORRECTLY
+.00012 NUMBER(4,5) .00012
+.000127 NUMBER(4,5) .00013  - HERE NON ZERO ARE 127 BUT SCALE IS 5 , DIGITS AFTER DECIMAL POINT ARE 6 
+HENCE THEY ARE ROUDED TO NEAREST INTEGER.
+.0000012 NUMBER(2,7) .0000012  - HERE NON ZERO DIGITS ARE 2, AND SCALE ALSO MATCHES
+.00000123 NUMBER(2,7) .0000012
+
+The FLOAT data type is a subtype of NUMBER. It can be specified with or without
+precision, which has the same definition it has for NUMBER and can range from 1 to 126.
+Scale cannot be specified, but is interpreted from the data.
+CREATE TABLE test (col1 NUMBER(5,2), col2 FLOAT(5));
+
+In this example, the FLOAT value returned cannot exceed 5 binary digits.
+HERE IT IS 5 binary DIGITS, LARGET DECIMAL POINT THAT CAN BE REP BY 5 BINARY DITITS IS 31
+SO 1.23 IS TRUNCATED AS 1.2 , AND 123.45 ROUNDED TO 120 WHICH HAS ONLY TOW SIGNIFICANT DECIMAL DIGITS AND 
+REQURES ONLY 4 BINARY DIGITS.
+Oracle recommends that you use the BINARY_FLOAT and BINARY_DOUBLE data types instead, as they are more robust.
+
+PG-57 RESTRICTIONS ON LONG CLAUSE
+
+LONG Data Type
+Do not create tables with LONG columns. Use LOB columns (CLOB, NCLOB, BLOB) instead.
+LONG columns are supported only for backward compatibility.
+
+-----------------------------------
+DATE TIME AND INTERVAL DATA TYPES
+
+DATE Data Type
+The DATE data type stores date and time information. Although date and time
+information can be represented in both character and number data types, the DATE data
+type has special associated properties. For each DATE value, Oracle stores the following
+information: year, month, day, hour, minute, and second.
+You can specify a DATE value as a literal, or you can convert a character or numeric
+value to a date value with the TO_DATE function. 
+
+
+
+default values are used in a query that requests date values where the date itself
+is not specified, as in the following example, which is issued in the month of May:
+SELECT TO_DATE('2009', 'YYYY')
+FROM DUAL;
+TO_DATE - 01-MAY-09
+SELECT TO_CHAR(TO_DATE('01-01-2009', 'MM-DD-YYYY'),'J')
+FROM DUAL;
+HERE THE J GIVES JULIAN EQUIVALENT OF JAN 1 2009.
+
+TIMESTAMP Data Type
+The TIMESTAMP data type is an extension of the DATE data type. It stores the year,
+month, and day of the DATE data type, plus hour, minute, and second values. 
+
+This data
+type is useful for storing precise time values and for collecting and evaluating date
+information across geographic regions. 
+
+INTERVAL YEAR TO MONTH Data Type
+INTERVAL YEAR TO MONTH stores a period of time using the YEAR and MONTH datetime
+fields. This data type is useful for representing the difference between two datetime
+values when only the year and month values are significant.
+Specify INTERVAL YEAR TO MONTH as follows:
+INTERVAL YEAR [(year_precision)] TO MONTH
+where year_precision is the number of digits in the YEAR datetime field. 
+
+INTERVAL DAY TO SECOND Data Type
+INTERVAL DAY TO SECOND stores a period of time in terms of days, hours, minutes, and
+seconds. This data type is useful for representing the precise difference between two
+datetime values.
+Specify this data type as follows:
+INTERVAL DAY [(day_precision)]
+TO SECOND [(fractional_seconds_precision)]
+
+SELECT order_id, EXTRACT(DAY FROM (SYSDATE - order_date) DAY TO SECOND)
+|| ' days '
+|| EXTRACT(HOUR FROM (SYSDATE - order_date) DAY TO SECOND)
+|| ' hours' "Interval"
+FROM orders;
+
+SELECT last_name, EXTRACT(YEAR FROM (SYSDATE - hire_date) YEAR TO MONTH)
+|| ' years '
+|| EXTRACT(MONTH FROM (SYSDATE - hire_date) YEAR TO MONTH)
+|| ' months' "Interval"
+
+
+----------------------------
+Varrays
+An array is an ordered set of data elements. All elements of a given array are of the
+same data type. Each element has an index, which is a number corresponding to the
+position of the element in the array.
+The number of elements in an array is the size of the array. Oracle arrays are of
+variable size, which is why they are called varrays. You must specify a maximum size
+when you declare the varray.
+When you declare a varray, it does not allocate space. It defines a type, which you can
+use as:
+■ The data type of a column of a relational table
+■ An object type attribute
+■ A PL/SQL variable, parameter, or function return type
+Oracle normally stores an array object either in line (as part of the row data) or out of
+line (in a LOB), depending on its size. 
+
+Nested Tables
+A nested table type models an unordered set of elements. The elements may be
+built-in types or user-defined types. You can view a nested table as a single-column
+table or, if the nested table is an object type, as a multicolumn table, with a column for
+each attribute of the object type.
+A nested table definition does not allocate space. It defines a type, which you can use
+to declare:
+■ The data type of a column of a relational table
+■ An object type attribute
+■ A PL/SQL variable, parameter, or function return type
+
+When a nested table appears as the type of a column in a relational table or as an
+attribute of the underlying object type of an object table, Oracle stores all of the nested
+table data in a single table, which it associates with the enclosing relational or object
+table.
+
+------------------------
+Data Conversion
+Generally an expression cannot contain values of different data types.
+
+Implicit and Explicit Data Conversion
+Oracle recommends that you specify explicit conversions, rather than rely on implicit
+or automatic conversions, for these reasons:
+■
+■
+■
+■
+■
+SQL statements are easier to understand when you use explicit data type
+conversion functions.
+Implicit data type conversion can have a negative impact on performance,
+especially if the data type of a column value is converted to that of a constant
+rather than the other way around.
+Implicit conversion depends on the context in which it occurs and may not work
+the same way in every case. For example, implicit conversion from a datetime
+value to a VARCHAR2 value may return an unexpected year depending on the value
+of the NLS_DATE_FORMAT parameter.
+
+Implicit Data Conversion
+Oracle Database automatically converts a value from one data type to another when
+such a conversion makes sense.
+
+-----------------
+Implicit Data Conversion Examples
+The text literal '10' has data type CHAR. Oracle implicitly
+converts it to the NUMBER data type if it appears in a numeric expression as in the
+following statement:
+Text Literal Example
+SELECT salary + '10'
+FROM employees;
+When a condition compares a character
+value and a NUMBER value, Oracle implicitly converts the character value to a NUMBER
+value, rather than converting the NUMBER value to a character value. In the following
+statement, Oracle implicitly converts '200' to 200:
+Character and Number Values Example
+SELECT last_name
+FROM employees
+WHERE employee_id = '200';
+
+
+In the following statement, Oracle implicitly converts '24-JUN-06' to a
+DATE value using the default date format 'DD-MON-YY':
+Date Example
+SELECT last_name
+FROM employees
+WHERE hire_date = '24-JUN-06';
+------------------------
+Explicit Data Conversion
+You can explicitly specify data type conversions using SQL conversion functions.
+TO_DATE , TO_CHAR , TO_NUMBER , TO_TIMESTAMP, TO_BINARY_FLAT TO_BINARY_DOUBLE
+
+
+------------------------------
+Literals
+The terms literal and constant value are synonymous and refer to a fixed data value.
+For example, 'JACK', 'BLUE ISLAND', and '101' are all character literals; 5001 is a
+numeric literal. Character literals are enclosed in single quotation marks so that Oracle
+can distinguish them from schema object names.
+
+
+Here are some valid text literals using the alternative quoting mechanism:
+q'!name LIKE '%DBMS_%%'!'
+q'<'So,' she said, 'It's finished.'>'
+q'{SELECT * FROM employees WHERE last_name = 'Smith';}'
+nq'ï Ÿ1234 ï'
+q'"name like '['"'
+
+
+-----------------------------
+
+Format Models
+A format model is a character literal that describes the format of datetime or numeric
+data stored in a character string. A format model does not change the internal
+representation of the value in the database. When you convert a character string into a
+date or number, a format model determines how Oracle Database interprets the string.
+In SQL statements, you can use a format model as an argument of the TO_CHAR and TO_
+DATE functions to specify:
+
+This remainder of this section describes how to use the following format models:
+■ Number Format Models
+■ Datetime Format Models
+■ Format Model Modifiers
+Number Format Models
+You can use number format models in the following functions:
+■
+■
+■
+In the TO_CHAR function to translate a value of NUMBER, BINARY_FLOAT, or BINARY_
+DOUBLE data type to VARCHAR2 data type
+In the TO_NUMBER function to translate a value of CHAR or VARCHAR2 data type to
+NUMBER data type
+In the TO_BINARY_FLOAT and TO_BINARY_DOUBLE functions to translate CHAR and
+VARCHAR2 expressions to BINARY_FLOAT or BINARY_DOUBLE values
+
+Datetime Format Models
+You can use datetime format models in the following functions:
+■
+■
+In the TO_* datetime functions to translate a character value that is in a format
+other than the default format into a datetime value. (The TO_* datetime functions
+are TO_DATE, TO_TIMESTAMP, and TO_TIMESTAMP_TZ.)
+In the TO_CHAR function to translate a datetime value into a character value that is
+in a format other than the default format (for example, to print the date from an
+application)
+The total length of a datetime format model cannot exceed 22 characters.
+
+Uppercase Letters in Date Format Elements Capitalization in a spelled-out word,
+abbreviation, or Roman numeral follows capitalization in the corresponding format
+element. For example, the date format model 'DAY' produces capitalized words like
+'MONDAY'; 'Day' produces 'Monday'; and 'day' produces 'monday'.
+
+
+day -------
+D Yes Day of week (1-7). This element depends on the NLS territory of the session.
+Element /TO_*datetime functions?/Description
+DAY Yes Name of day.
+DD Yes Day of month (1-31).
+DDD Yes Day of year (1-366).
+DY Yes Abbreviated name of day
+HOUR ---
+HH Yes Hour of day (1-12).
+HH12 
+
+HH24 Yes Hour of day (0-23).
+
+MI Yes Minute (0-59).
+MM Yes Month (01-12; January = 01).
+MON Yes Abbreviated name of month.
+MONTH Yes Name of month.
+
+PM Yes Meridian indicator with or without periods.
+P.M. 
+
+PAGE 106 
+Q  - QUARTER OF THE YEAR.
+SS Yes Second (0-59).
+SSSSS Yes Seconds past midnight (0-86399).
+
+WW
+Week of year (1-53) where week 1 starts on the first day of the year and continues to
+the seventh day of the year.
+W    Week of month (1-5) where week 1 starts on the first day of the month and ends on
+the seventh
+
+YEAR - Year, spelled out;
+YYYY Yes 4-digit year; S prefixes BC dates with a minus sign.
+
+YYY Yes Last 3, 2, or 1 digit(s) of year.
+YY 
+Y 
+
+Oracle Database converts strings to dates with some flexibility. For example, when the
+TO_DATE function is used, a format model containing punctuation characters matches
+an input string lacking some or all of these characters, provided each numerical
+element in the input string contains the maximum allowed number of digits—for
+example, two digits '05' for 'MM' or four digits '2007' for 'YYYY'. The following
+statement does not return an error:
+SELECT TO_CHAR(TO_DATE('0207','MM/YY'), 'MM/YY') FROM DUAL;
+TO_CH
+-----
+02/07
+
+
+
+
+
+
+
+
+
+
+
+
