@@ -1,0 +1,219 @@
+PG 171
+
+A pseudocolumn behaves like a table column, but is not actually stored in the table.
+You can select from pseudocolumns, but you cannot insert, update, or delete their
+values. A pseudocolumn is also similar to a function without arguments (refer to
+Chapter 7, "Functions"). However, functions without arguments typically return the
+same value for every row in the result set, whereas pseudocolumns typically return a
+different value for each row.
+
+-------------------
+This chapter contains the following sections:
+■ Hierarchical Query Pseudocolumns
+■ Sequence Pseudocolumns
+■ Version Query Pseudocolumns
+■ COLUMN_VALUE Pseudocolumn
+■ OBJECT_ID Pseudocolumn
+■ OBJECT_VALUE Pseudocolumn
+■ ORA_ROWSCN Pseudocolumn
+■ ROWID Pseudocolumn
+■ ROWNUM Pseudocolumn
+■ XMLDATA Pseudocolumn
+
+---------------
+Hierarchical Query Pseudocolumns
+The hierarchical query pseudocolumns are valid only in hierarchical queries. The
+hierarchical query pseudocolumns are:
+■ CONNECT_BY_ISCYCLE Pseudocolumn
+■ CONNECT_BY_ISLEAF Pseudocolumn
+■ LEVEL Pseudocolumn
+To define a hierarchical relationship in a query, you must use the CONNECT BY clause.
+
+
+
+
+
+LEVEL Pseudocolumn
+For each row returned by a hierarchical query, the LEVEL pseudocolumn returns 1 for a
+root row, 2 for a child of a root, and so on. A root row is the highest row within an
+inverted tree. A child row is any nonroot row. A parent row is any row that has
+children. A leaf row is any row without children. 
+
+
+Sequence Pseudocolumns
+A sequence is a schema object that can generate unique sequential values. These
+values are often used for primary and unique keys. You can refer to sequence values in
+SQL statements with these pseudocolumns:
+■ CURRVAL: Returns the current value of a sequence
+■ NEXTVAL: Increments the sequence and returns the next value
+You must qualify CURRVAL and NEXTVAL with the name of the sequence:
+sequence.CURRVAL
+sequence.NEXTVAL
+
+Where to Use Sequence Values
+You can use CURRVAL and NEXTVAL in the following locations:
+■
+The select list of a SELECT statement that is not contained in a subquery,
+materialized view, or view
+The select list of a subquery in an INSERT statement
+■ The VALUES clause of an INSERT statement
+■ The SET clause of an UPDATE statement
+
+
+
+
+Version Query Pseudocolumns
+The version query pseudocolumns are valid only in Oracle Flashback Version Query,
+which is a form of Oracle Flashback Query. The version query pseudocolumns are:
+■
+VERSIONS_STARTSCN and VERSIONS_STARTTIME: Starting System Change Number
+(SCN) or TIMESTAMP when the row version was created. This pseudocolumn
+identifies the time when the data first had the values reflected in the row version.
+Use this pseudocolumn to identify the past target time for Oracle Flashback Table
+or Oracle Flashback Query. If this pseudocolumn is NULL, then the row version was
+created before start.
+■
+■
+■
+VERSIONS_ENDSCN and VERSIONS_ENDTIME: SCN or TIMESTAMP when the row
+version expired. If the pseudocolumn is NULL, then either the row version was
+current at the time of the query or the row corresponds to a DELETE operation.
+VERSIONS_XID: Identifier (a RAW number) of the transaction that created the row
+version.
+VERSIONS_OPERATION: Operation performed by the transaction: I for insertion, D
+for deletion, or U for update. The version is that of the row that was inserted,
+deleted, or updated; that is, the row after an INSERT operation, the row before a
+DELETE operation, or the row affected by an UPDATE operation.
+For user updates of an index key, Oracle Flashback Version Query might treat an
+UPDATE operation as two operations, DELETE plus INSERT, represented as two
+version rows with a D followed by an I VERSIONS_OPERATION.
+
+
+
+COLUMN_VALUE Pseudocolumn
+When you refer to an XMLTable construct without the COLUMNS clause, or when you use
+the TABLE collection expression to refer to a scalar nested table type, the database
+returns a virtual table with a single column. This name of this pseudocolumn is
+COLUMN_VALUE.
+In the context of XMLTable, the value returned is of data type XMLType. 
+SELECT COLUMN_VALUE
+FROM (XMLTable('<a>123</a>'));
+COLUMN_VALUE
+----------------------------------------
+<a>123</a>
+
+
+in the context of a TABLE collection expression, the value returned is the data type of
+the collection element.
+SELECT t.COLUMN_VALUE
+FROM TABLE(phone(1,2,3)) t;
+COLUMN_VALUE
+------------
+1
+2
+3
+In a nested type, you can use the COLUMN_VALUE pseudocolumn in both the select list
+and the TABLE collection expression:
+SELECT t.COLUMN_VALUE
+FROM TABLE(phone_list(phone(1,2,3))) p, TABLE(p.COLUMN_VALUE) t;
+COLUMN_VALUE
+------------
+1
+2
+3
+OBJECT_ID Pseudocolumn
+The OBJECT_ID pseudocolumn returns the object identifier of a column of an object
+table or view. Oracle uses this pseudocolumn as the primary key of an object table.
+OBJECT_ID is useful in INSTEAD OF triggers on views and for identifying the ID of a
+substitutable row in an object table.
+
+
+ORA_ROWSCN Pseudocolumn
+ORA_ROWSCN reflects the system change-number (SCN) of the most recent change to a
+row. This change can be at the level of a block (coarse) or at the level of a row
+(fine-grained). The latter is provided by row-level dependency tracking. 
+
+
+ROWID Pseudocolumn
+For each row in the database, the ROWID pseudocolumn returns the address of the row.
+Oracle Database rowid values contain information necessary to locate a row:
+■ The data object number of the object
+■ The data block in the data file in which the row resides
+■ The position of the row in the data block (first row is 0)
+■
+The data file in which the row resides (first file is 1). The file number is relative to
+the tablespace.
+
+Rowid values have several important uses:
+■ They are the fastest way to access a single row.
+■ They can show you how the rows in a table are stored.
+■ They are unique identifiers for rows in a table.
+
+
+ROWNUM Pseudocolumn
+Notes:
+■
+■
+The ROW_NUMBER built-in SQL function provides superior support
+for ordering the results of a query. 
+
+The row_limiting_clause of the SELECT statement provides
+superior support for limiting the number of rows returned by a
+query. 
+
+
+For each row returned by a query, the ROWNUM pseudocolumn returns a number
+indicating the order in which Oracle selects the row from a table or set of joined rows.
+The first row selected has a ROWNUM of 1, the second has 2, and so on.
+You can use ROWNUM to limit the number of rows returned by a query, as in this
+example:
+SELECT *
+FROM employees
+WHERE ROWNUM < 11;
+If an ORDER BY clause follows ROWNUM in the same query, then the rows will be reordered
+by the ORDER BY clause. The results can vary depending on the way the rows are
+accessed. For example, if the ORDER BY clause causes Oracle to use an index to access
+the data, then Oracle may retrieve the rows in a different order than without the index.
+Therefore, the following statement does not necessarily return the same rows as the
+preceding example:
+SELECT *
+FROM employees
+WHERE ROWNUM < 11
+ORDER BY last_name;
+
+
+
+If you embed the ORDER BY clause in a subquery and place the ROWNUM condition in the
+top-level query, then you can force the ROWNUM condition to be applied after the
+ordering of the rows. For example, the following query returns the employees with the
+10 smallest employee numbers. This is sometimes referred to as top-N reporting:
+SELECT *
+FROM (SELECT * FROM employees ORDER BY employee_id)
+WHERE ROWNUM < 11;
+In the preceding example, the ROWNUM values are those of the top-level SELECT
+statement, so they are generated after the rows have already been ordered by
+employee_id in the subquery.
+Conditions testing for ROWNUM values greater than a positive integer are always false.
+For example, this query returns no rows:
+SELECT *
+FROM employees
+WHERE ROWNUM > 1;
+The first row fetched is assigned a ROWNUM of 1 and makes the condition false. The
+second row to be fetched is now the first row and is also assigned a ROWNUM of 1 and
+
+makes the condition false. All rows subsequently fail to satisfy the condition, so no
+rows are returned.
+You can also use ROWNUM to assign unique values to each row of a table, as in this
+example:
+UPDATE my_table
+SET column1 = ROWNUM;
+Refer to the function ROW_NUMBER on page 7-287 for an alternative method of
+assigning unique numbers to rows.
+
+
+XMLDATA Pseudocolumn
+Oracle stores XMLType data either in LOB or object-relational columns, based on
+XMLSchema information and how you specify the storage clause. The XMLDATA
+pseudocolumn lets you access the underlying LOB or object relational column to
+specify additional storage clause parameters, constraints, indexes, and so forth.
+
