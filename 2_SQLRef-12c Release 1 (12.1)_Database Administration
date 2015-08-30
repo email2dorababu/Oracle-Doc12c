@@ -1,0 +1,52 @@
+Hints
+Hints are comments in a SQL statement that pass instructions to the Oracle Database
+optimizer. The optimizer uses these hints to choose an execution plan for the
+statement, unless some condition exists that prevents the optimizer from doing so.
+
+Now Oracle provides a number of tools, including the
+SQL Tuning Advisor, SQL plan management, and SQL Performance Analyzer, to help
+you address performance problems that are not solved by the optimizer. Oracle
+strongly recommends that you use those tools rather than hints. The tools are far
+superior to hints, because when used on an ongoing basis, they provide fresh solutions
+as your data and database environment change.
+
+
+Hints should be used sparingly, and only after you have collected statistics on the
+relevant tables and evaluated the optimizer plan without hints using the EXPLAIN PLAN
+statement. Changing database conditions as well as query performance enhancements
+in subsequent releases can have significant impact on how hints in your code affect
+performance.
+
+
+Using Hints
+A statement block can have only one comment containing hints, and that comment
+must follow the SELECT, UPDATE, INSERT, MERGE, or DELETE keyword.
+The plus sign (+) causes Oracle to interpret the comment as a list of hints. The plus
+sign must follow immediately after the comment delimiter. No space is permitted.
+
+hint is one of the hints discussed in this section. The space between the plus sign
+and the hint is optional. If the comment contains multiple hints, then separate the
+hints by at least one space.
+string is other commenting text that can be interspersed with the hints.
+The --+ syntax requires that the entire comment be on a single line.
+
+Oracle Database ignores hints and does not return an error under the following
+circumstances:
+■
+■
+■
+■
+■
+The hint contains misspellings or syntax errors. However, the database does
+consider other correctly specified hints in the same comment.
+The comment containing the hint does not follow a DELETE, INSERT, MERGE, SELECT,
+or UPDATE keyword.
+A combination of hints conflict with each other. However, the database does
+consider other hints in the same comment.
+
+Specifying a Query Block in a Hint
+You can specify an optional query block name in many hints to specify the query block
+to which the hint applies. This syntax lets you specify in the outer query a hint that
+applies to an inline view.
+The syntax of the query block argument is of the form @queryblock, where queryblock
+is an identifier that specifies a query block in the query.
