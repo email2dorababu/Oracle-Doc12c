@@ -1,1 +1,17 @@
 Oracle Database Online Documentation 12c Release 1 (12.1)_Database Administration_SQLRef.pdf
+
+pg 34
+Declare and define PL/SQL functions and procedures in the WITH clause of a
+query. You can then reference the PL/SQL functions in the query and its
+subqueries.
+
+Chapter 2: Basic Elements of Oracle SQL
+Built in data types:
+varchar2( size [byte|char]) - variable length character string
+NVARCHAR2(size) - variable length UNICODE character string
+NUMBER[(p,[s])] - 
+Float(p) - subtype of number, internally represented as NUMBER
+LONG - provided for backward compatibility 2gb char variable length
+DATE - 4712 jan 1 BC to dev 31 9999AD
+   NLS_DATE_FORMAT determines the default format. Size is fixed 7 bytes.
+   
